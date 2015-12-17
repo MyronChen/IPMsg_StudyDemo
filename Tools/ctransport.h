@@ -13,6 +13,8 @@ public:
     virtual void open() { throw std::exception(); };
     virtual void close() { throw std::exception(); }
     virtual bool isOpened() const {throw std::exception();}
+    virtual bool writeEnd() { throw CException(); }
+    virtual bool flush() { throw CException(); }
 
 protected:
     CTransport() {};

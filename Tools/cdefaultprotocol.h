@@ -33,6 +33,16 @@ public:
         throw CException();
     }
 
+    uint32_t writeStructBegin(const char *name)
+    {
+        throw CException();
+    }
+
+    uint32_t writeStructEnd()
+    {
+        throw CException();
+    }
+
     uint32_t writeString(const std::string &val)
     {
         throw CException();
@@ -48,6 +58,10 @@ public:
         throw CException();
     }
 
+    uint32_t writeFieldStop()
+    {
+        throw CException();
+    }
 
     uint32_t readMessageBegin(std::string &name,
                              MessageType &type,
@@ -68,6 +82,16 @@ public:
         throw CException();
     }
     uint32_t readFieldEnd()
+    {
+        throw CException();
+    }
+
+    uint32_t readStructBegin(std::string &name)
+    {
+        throw CException();
+    }
+
+    uint32_t readStructEnd()
     {
         throw CException();
     }
@@ -120,6 +144,16 @@ class CVirtualProtocol : public Super_
         return static_cast<Protocol_*>(this)->writeFieldEnd();
     }
 
+    virtual uint32_t writeStructBegin_virt(const char *name)
+    {
+        return static_cast<Protocol_*>(this)->writeStructBegin(name);
+    }
+
+    virtual uint32_t writeStructEnd_virt()
+    {
+        return static_cast<Protocol_*>(this)->writeStructEnd();
+    }
+
     virtual uint32_t writeString_virt(const std::string &val)
     {
         return static_cast<Protocol_*>(this)->writeString(val);
@@ -135,6 +169,10 @@ class CVirtualProtocol : public Super_
         return static_cast<Protocol_*>(this)->writeDouble(val);
     }
 
+    virtual uint32_t writeFieldStop_virt()
+    {
+        return static_cast<Protocol_*>(this)->writeFieldStop();
+    }
 
     virtual uint32_t readMessageBegin_virt(std::string &name,
                              MessageType &type,
@@ -157,6 +195,15 @@ class CVirtualProtocol : public Super_
     virtual uint32_t readFieldEnd_virt()
     {
         return static_cast<Protocol_*>(this)->readFieldEnd();
+    }
+
+    virtual uint32_t readStructBegin_virt(std::string &name)
+    {
+        return static_cast<Protocol_*>(this)->readStructBegin(name);
+    }
+    virtual uint32_t readStructEnd_virt()
+    {
+        return static_cast<Protocol_*>(this)->readStructEnd();
     }
 
     virtual uint32_t readString_virt(std::string &val)

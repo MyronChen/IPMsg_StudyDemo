@@ -32,11 +32,17 @@ public:
                                            int16_t fieldid) = 0;
     virtual uint32_t writeFieldEnd_virt() = 0;
 
+    virtual uint32_t writeStructBegin_virt(const char *name) = 0;
+
+    virtual uint32_t writeStructEnd_virt() = 0;
+
     virtual uint32_t writeString_virt(const std::string &val) = 0;
 
     virtual uint32_t writeInt32_virt(int32_t val) = 0;
 
     virtual uint32_t writeDouble_virt(double val) = 0;
+
+    virtual uint32_t writeFieldStop_virt() = 0;
 
     uint32_t writeMessageBegin(const std::string &name,
                                 MessageType type,
@@ -57,6 +63,21 @@ public:
         return writeFieldBegin_virt(name, type, fieldid);
     }
 
+    uint32_t writeFieldEnd()
+    {
+        return writeFieldEnd_virt();
+    }
+
+    uint32_t writeStructBegin(const char *name)
+    {
+        return writeStructBegin_virt(name);
+    }
+
+    uint32_t writeStructEnd()
+    {
+        return writeStructEnd_virt();
+    }
+
     uint32_t writeString(const std::string &val)
     {
         return writeString_virt(val);
@@ -72,7 +93,10 @@ public:
         return writeDouble_virt(val);
     }
 
-
+    uint32_t writeFieldStop()
+    {
+        return writeFieldStop_virt();
+    }
 
     //read
     virtual uint32_t readMessageBegin_virt(std::string &name,
@@ -84,6 +108,10 @@ public:
                                           FieldType &type,
                                           int16_t &fieldid) = 0;
     virtual uint32_t readFieldEnd_virt() = 0;
+
+    virtual uint32_t readStructBegin_virt(std::string &name) = 0;
+
+    virtual uint32_t readStructEnd_virt() = 0;
 
     virtual uint32_t readString_virt(std::string &val) = 0;
 
@@ -111,6 +139,16 @@ public:
     uint32_t readFieldEnd()
     {
         return readFieldEnd_virt();
+    }
+
+    uint32_t readStructBegin(std::string &name)
+    {
+        return readStructBegin_virt(name);
+    }
+
+    uint32_t readStructEnd()
+    {
+        return readStructEnd_virt();
     }
 
     uint32_t readString(std::string &val)
@@ -148,6 +186,11 @@ public:
     void decreInRecursionDepth()
     {
         _inRecursionDepth--;
+    }
+
+    boost::shared_ptr<CTransport> getTransport() const
+    {
+        return _trans;
     }
 
 protected:
