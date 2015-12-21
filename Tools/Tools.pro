@@ -15,14 +15,18 @@ SOURCES += tools.cpp \
     ctransport.cpp \
     csocket.cpp \
     cbinaryprotocol.cpp \
-    cdefaultprotocol.cpp
+    cdefaultprotocol.cpp \
+    cservertransport.cpp \
+    cserversocket.cpp
 
 HEADERS += tools.h \
     cprotocol.h \
     ctransport.h \
     csocket.h \
     cbinaryprotocol.h \
-    cdefaultprotocol.h
+    cdefaultprotocol.h \
+    cservertransport.h \
+    cserversocket.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

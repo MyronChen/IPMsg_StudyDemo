@@ -5,6 +5,7 @@
 #include <QString>
 #include <boost/shared_ptr.hpp>
 #include <netinet/in.h>
+#include <boost/make_shared.hpp>
 
 #define IPMSG_PORT  20001
 

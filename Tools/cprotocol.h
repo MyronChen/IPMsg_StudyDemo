@@ -234,6 +234,14 @@ private:
     CProtocol &_prot;
 };
 
+class CProtocolFactory
+{
+public:
+    virtual ~CProtocolFactory(){}
+    virtual boost::shared_ptr<CProtocol> getProtocol(boost::shared_ptr<CTransport> trans) = 0;
+};
+
+
 }LEAVE_PROTOCOL
 
 #endif // CPROTOCOL_H
