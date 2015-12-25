@@ -10,7 +10,7 @@ class CTransport;
 template<class Transport_>
 uint32_t readallImpl(Transport_ &trans, uint8_t *buf, uint32_t len)
 {
-    int result(0);
+    uint32_t result(0);
     while(result < len)
     {
         result += trans.read(buf, len);

@@ -92,6 +92,23 @@ bool CSocket::isOpened() const
     return (_socket != C_INVALID_SOCKET);
 }
 
+uint32_t CSocket::write(const uint8_t *buf, uint32_t len)
+{
+    if (_socket == C_INVALID_SOCKET)
+        throw CTransportException(CTransportException::NotOpen);
+
+    uint32_t sent = 0;
+    while (sent < len)
+    {
+        uint32_t b = writePartial(buf + sent, len - sent);
+        if (b == 0)
+            throw CTransportException(CTransportException::Timeout);
+        sent += b;
+    }
+
+    return sent;
+}
+
 
 uint32_t CSocket::read(uint8_t *buf, uint32_t len)
 {
@@ -190,6 +207,11 @@ void CSocket::setNoDelay(bool noDelay)
     {
         //log msg
     }
+}
+
+uint32_t CSocket::writePartial(const uint8_t *buf, uint32_t len)
+{
+
 }
 
 }LEAVE_NET

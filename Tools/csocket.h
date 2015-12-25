@@ -18,6 +18,7 @@ public:
     virtual void close();
     virtual bool isOpened() const;
 
+    uint32_t write(const uint8_t *buf, uint32_t len);
     uint32_t read(uint8_t *buf, uint32_t len);
 
 
@@ -25,6 +26,9 @@ private:
     void openConnect(addrinfo *res);
     void setLinger(bool lingerOn, int lingerVal);
     void setNoDelay(bool noDelay);
+
+    uint32_t writePartial(const uint8_t *buf, uint32_t len);
+
 
 private:
     QString _addr;
