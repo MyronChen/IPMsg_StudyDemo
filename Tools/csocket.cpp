@@ -26,6 +26,12 @@ CSocket::CSocket(const QString &addr) : _addr(addr),_socket(C_INVALID_SOCKET), _
 
 }
 
+CSocket::CSocket(int socket) : _socket(socket), _lingerOn(true), _lingerVal(0),
+    _noDelay(true)
+{
+
+}
+
 CSocket::~CSocket()
 {
 
@@ -84,6 +90,14 @@ void CSocket::close()
 bool CSocket::isOpened() const
 {
     return (_socket != C_INVALID_SOCKET);
+}
+
+
+uint32_t CSocket::read(uint8_t *buf, uint32_t len)
+{
+    if (_socket == C_INVALID_SOCKET)
+        throw CTransportException(CTransportException::NotOpen);
+    return ::read(_socket, buf, len);
 }
 
 void CSocket::openConnect(addrinfo *res)

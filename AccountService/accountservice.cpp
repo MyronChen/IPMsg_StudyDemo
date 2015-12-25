@@ -51,3 +51,25 @@ void AccountClient::loginRecv()
 }
 
 
+
+void AccountProcessor::loginDispatch(int32_t seqid, CProtocol *proc, void *data)
+{
+
+}
+
+bool AccountProcessor::dispatchProcess(CProtocol *proc, const std::string &name, int32_t seqid)
+{
+    ProcessorMap::iterator iter = _funcMap.find(name);
+    if (iter != _funcMap.end())
+    {
+        (this->*(iter->second))(seqid, proc, NULL);
+    }
+    else
+    {
+        //throe exception to client
+        assert(false);
+        return true;
+    }
+}
+
+

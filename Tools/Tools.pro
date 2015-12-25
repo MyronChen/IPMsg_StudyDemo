@@ -17,7 +17,12 @@ SOURCES += tools.cpp \
     cbinaryprotocol.cpp \
     cdefaultprotocol.cpp \
     cservertransport.cpp \
-    cserversocket.cpp
+    cserversocket.cpp \
+    cserver.cpp \
+    cprocessor.cpp \
+    cconnectedclient.cpp \
+    crunnable.cpp \
+    ctransportexception.cpp
 
 HEADERS += tools.h \
     cprotocol.h \
@@ -26,7 +31,12 @@ HEADERS += tools.h \
     cbinaryprotocol.h \
     cdefaultprotocol.h \
     cservertransport.h \
-    cserversocket.h
+    cserversocket.h \
+    cserver.h \
+    cprocessor.h \
+    cconnectedclient.h \
+    crunnable.h \
+    ctransportexception.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

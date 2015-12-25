@@ -1,6 +1,15 @@
 #include "cserversocket.h"
+#include "fcntl.h"
+#include <sys/poll.h>
+#include "csocket.h"
 
 ENTER_NET{
+
+    template<class T>
+    inline const void* const_cast_opt(const T *v)
+    {
+        return reinterpret_cast<const void*>(v);
+    }
 
     void destoryer_of_socket(int *pSocket)
     {
@@ -75,8 +84,167 @@ void CServerSocket::listen()
         throw CException();
     }
 
+    freeaddrinfo(pRes0);
+
+    setReuseAddr(true);
+    setLinger(false, 0);
+    setNoDelay(true);
+    setNonblock(true);
+
+    if (::bind(_socket, pRes->ai_addr, pRes->ai_addrlen))
+    {
+        //log error
+        close();
+        throw CException();
+    }
+
+    if (::listen(_socket, DEFAULT_BACKLOG))
+    {
+        //log error
+        close();
+        throw CException();
+    }
+
 }
 
+void CServerSocket::close()
+{
+    if (_socket != C_INVALID_SOCKET)
+        ::close(_socket);
+
+    _socket = C_INVALID_SOCKET;
+}
+
+boost::shared_ptr<CTransport> CServerSocket::acceptImpl()
+{
+    if (_socket == C_INVALID_SOCKET)
+        throw CException();
+
+    pollfd fd[2];
+    while (true)
+    {
+        memset(fd, 0, sizeof(fd));
+        fd[0].fd = _socket;
+        fd[0].events = POLLIN;
+        if (_interruptSocketReader != C_INVALID_SOCKET)
+        {
+            fd[1].fd = _interruptSocketReader;
+            fd[1].events = POLLIN;
+        }
+
+        int ret = poll(fd, 2, -1);
+        if (ret > 0)
+        {
+            if (_interruptSocketReader != C_INVALID_SOCKET && fd[1].revents & POLLIN)
+                throw CException();
+
+            if (fd[0].revents & POLLIN)
+                break;
+        }
+        else if (ret == 0)
+        {
+            //timeout
+            throw CException();
+        }
+        else
+        {
+            //poll error
+            throw CException();
+        }
+    }
+
+    sockaddr_storage clientAddr;
+    socklen_t addrLen = sizeof(clientAddr);
+    int clientSocket = ::accept(_socket, (sockaddr*)&clientAddr, &addrLen);
+    if (clientSocket == -1)
+        throw CException();
+
+    /* block */
+    int flags = fcntl(clientSocket, F_GETFL, 0);
+    if (flags == -1)
+    {
+        //log msg
+        ::close(clientSocket);
+        throw CException();
+    }
+    flags &= ~O_NONBLOCK;
+    if (-1 == fcntl(clientSocket, F_SETFL, flags))
+    {
+        //log msg
+        ::close(clientSocket);
+        throw CException();
+    }
+
+    boost::shared_ptr<CSocket> pClientSocket = boost::shared_ptr<CSocket>(new CSocket(clientSocket));
+    return pClientSocket;
+}
+
+void CServerSocket::setReuseAddr(bool bReuse)
+{
+    int opt = bReuse ? 1 : 0;
+    if (-1 == setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, const_cast_opt(&opt), sizeof(opt)))
+    {
+        //log error
+        close();
+        throw CException();
+    }
+}
+
+void CServerSocket::setLinger(bool lingerOn, int lingerVal)
+{
+    if (_socket == C_INVALID_SOCKET)
+        return;
+
+    linger zLinger = { lingerOn ? 1 : 0, lingerVal };
+    int ret = setsockopt(_socket, SOL_SOCKET, SO_LINGER, const_cast_opt(&zLinger), sizeof(zLinger));
+    if (ret == -1)
+    {
+        //log errno
+        close();
+        throw CException();
+    }
+}
+
+void CServerSocket::setNoDelay(bool noDelay)
+{
+    if (_socket == C_INVALID_SOCKET)
+        return;
+
+    int val = noDelay ? 1 : 0;
+    int ret = setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, const_cast_opt(&val), sizeof(val));
+    if (ret == -1)
+    {
+        //log msg
+        close();
+        throw CException();
+    }
+}
+
+void CServerSocket::setNonblock(bool nonblock)
+{
+    if (_socket == C_INVALID_SOCKET)
+        return;
+
+    int flags = fcntl(_socket, F_GETFL, 0);
+    if (flags == -1)
+    {
+        //log msg
+        close();
+        throw CException();
+    }
+
+    if (nonblock)
+        flags |= O_NONBLOCK;
+    else
+        flags &= ~O_NONBLOCK;
+
+    if (-1 == fcntl(_socket, F_SETFL, flags))
+    {
+        //log msg
+        close();
+        throw CException();
+    }
+}
 
 
 } LEAVE_NET

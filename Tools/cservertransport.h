@@ -3,6 +3,9 @@
 
 #include "ctransport.h"
 
+ENTER_NET {
+
+
 class CServerTransport
 {
 public:
@@ -35,5 +38,7 @@ protected:
 
 
 };
+
+}LEAVE_NET
 
 #endif // CSERVERTRANSPORT_H

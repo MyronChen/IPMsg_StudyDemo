@@ -2,10 +2,18 @@
 #define TOOLS_H
 
 #include <string>
+#include <map>
 #include <QString>
 #include <boost/shared_ptr.hpp>
 #include <netinet/in.h>
+#include <netdb.h>
+#include <errno.h>
+#include <stdio.h>
+#include <netinet/tcp.h>
 #include <boost/make_shared.hpp>
+
+
+#include "ctransportexception.h"
 
 #define IPMSG_PORT  20001
 

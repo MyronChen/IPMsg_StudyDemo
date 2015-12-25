@@ -11,11 +11,15 @@ class CSocket : public CVirtualTransport<CSocket>
 {
 public:
     CSocket(const QString &addr);
+    CSocket(int socket);
     virtual ~CSocket();
 
     virtual void open();
     virtual void close();
     virtual bool isOpened() const;
+
+    uint32_t read(uint8_t *buf, uint32_t len);
+
 
 private:
     void openConnect(addrinfo *res);
