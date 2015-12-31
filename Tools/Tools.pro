@@ -22,7 +22,8 @@ SOURCES += tools.cpp \
     cprocessor.cpp \
     cconnectedclient.cpp \
     crunnable.cpp \
-    ctransportexception.cpp
+    ctransportexception.cpp \
+    cappexception.cpp
 
 HEADERS += tools.h \
     cprotocol.h \
@@ -36,7 +37,9 @@ HEADERS += tools.h \
     cprocessor.h \
     cconnectedclient.h \
     crunnable.h \
-    ctransportexception.h
+    ctransportexception.h \
+    cappexception.h \
+    cappexception.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

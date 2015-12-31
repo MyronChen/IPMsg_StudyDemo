@@ -17,7 +17,7 @@ public:
     virtual void open();
     virtual void close();
     virtual bool isOpened() const;
-
+    virtual bool peek();
     uint32_t write(const uint8_t *buf, uint32_t len);
     uint32_t read(uint8_t *buf, uint32_t len);
 

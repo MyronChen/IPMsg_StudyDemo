@@ -92,11 +92,20 @@ bool CSocket::isOpened() const
     return (_socket != C_INVALID_SOCKET);
 }
 
+bool CSocket::peek()
+{
+    if (!isOpened())
+        return false;
+
+    int8_t buf;
+    int result = static_cast<int>(recv(_socket, cast_opt(&buf), 1, MSG_PEEK));
+    if (result == -1)
+        throw CTransportException(CTransportException::Unknow);
+    return (result > 0);
+}
+
 uint32_t CSocket::write(const uint8_t *buf, uint32_t len)
 {
-    if (_socket == C_INVALID_SOCKET)
-        throw CTransportException(CTransportException::NotOpen);
-
     uint32_t sent = 0;
     while (sent < len)
     {
@@ -211,7 +220,37 @@ void CSocket::setNoDelay(bool noDelay)
 
 uint32_t CSocket::writePartial(const uint8_t *buf, uint32_t len)
 {
+    if (_socket == C_INVALID_SOCKET)
+        throw CTransportException(CTransportException::NotOpen);
 
+    int b = ::send(_socket, const_cast_opt(buf), len, 0);
+
+    if ( b < 0 )
+    {
+        int errno_copy = errno;
+        if (errno_copy == EWOULDBLOCK || errno_copy == EAGAIN)
+            return 0;
+        if (errno_copy == EPIPE || errno_copy == ECONNRESET || errno_copy == ENOTCONN)
+        {
+            close();
+            throw CTransportException(CTransportException::NotOpen);
+        }
+
+        throw CTransportException(CTransportException::Unknow);
+    }
+
+    if (b == 0)
+    {
+        throw CTransportException(CTransportException::NotOpen);
+    }
+
+    return b;
 }
 
 }LEAVE_NET
+
+
+
+
+
+

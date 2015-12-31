@@ -15,6 +15,7 @@ public:
     static ServerStub* instance();
 
     bool registerUser(const QString &sName, const QString &sPwd, const QString &sAddr);
+    bool loginUser(const QString &sName, const QString &sPwd, const QString &sAddr);
 
 protected:
     ServerStub();

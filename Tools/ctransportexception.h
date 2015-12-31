@@ -5,7 +5,7 @@
 class CTransportException : public std::exception
 {
 public:
-    enum CTransportExceptionType { Unknow, Timeout, NotOpen};
+    enum CTransportExceptionType { Unknow, Timeout, NotOpen, BadVer, OverLimit };
 
     CTransportException();
     CTransportException(CTransportExceptionType type)

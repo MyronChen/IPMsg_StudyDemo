@@ -8,14 +8,16 @@ ENTER_PROTOCOL{
 
 enum MessageType{
     C_Call,
-    C_REPLY
+    C_REPLY,
+    C_EXCEPTION
 };
 
 enum FieldType{
     C_STOP,
     C_STRING,
     C_INT32,
-    C_DOUBLE
+    C_DOUBLE,
+    C_STRUCT
 };
 
 class CProtocol
@@ -193,6 +195,46 @@ public:
         return _trans;
     }
 
+    uint32_t skip(FieldType type)
+    {
+        uint32_t iBytes(0);
+        int16_t iTemp16;
+        std::string sTemp;
+        switch(type)
+        {
+        case C_STRING:
+            iBytes += readString(sTemp);
+            break;
+        case C_INT32:
+            int32_t iTemp;
+            iBytes += readInt32(iTemp);
+            break;
+        case C_DOUBLE:
+            double dTemp;
+            iBytes += readDouble(dTemp);
+            break;
+        case C_STRUCT:
+        {
+            iBytes += readStructBegin(sTemp);
+            FieldType fldType;
+            while (true)
+            {
+                iBytes += readFieldBegin(sTemp, fldType, iTemp16);
+                if (fldType == C_STOP)
+                    break;
+                iBytes += skip(fldType);
+                iBytes += readFieldEnd();
+            }
+            iBytes += readStructEnd();
+            break;
+        }
+        default:
+            ;
+        }
+
+        return iBytes;
+    }
+
 protected:
     CProtocol(boost::shared_ptr<CTransport> trans)
         : _trans(trans), _outRecursionDepth(0), _inRecursionDepth(0)
@@ -228,6 +270,24 @@ public:
     ~COutRecursionTraker()
     {
         _prot.decreOutRecursionDepth();
+    }
+
+private:
+    CProtocol &_prot;
+};
+
+class CInRecursionTraker
+{
+public:
+    CInRecursionTraker(CProtocol &prot)
+        : _prot(prot)
+    {
+        _prot.increInRecursionDepth();
+    }
+
+    ~CInRecursionTraker()
+    {
+        _prot.decreInRecursionDepth();
     }
 
 private:

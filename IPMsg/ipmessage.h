@@ -13,6 +13,7 @@ public:
     static IPMessage* instance();
 
     bool registerUser(const QString &sName, const QString &sPwd, const QString &sAddr);
+    bool loginUser(const QString &sName, const QString &sPwd, const QString &sAddr);
 
 protected:
     IPMessage();

@@ -29,8 +29,11 @@ public:
     virtual void open() { throw std::exception(); };
     virtual void close() { throw std::exception(); }
     virtual bool isOpened() const {throw std::exception();}
-    virtual bool writeEnd() { throw CException(); }
-    virtual bool flush() { throw CException(); }
+    virtual uint32_t writeEnd() { return 0; }
+    virtual uint32_t readEnd() { return 0; }
+
+    virtual bool flush() {  }
+    virtual bool peek() { return isOpened(); }
 
     uint32_t readall(uint8_t *buf, uint32_t len) { return readall_virt(buf, len);}
     virtual uint32_t readall_virt(uint8_t *buf, uint32_t len)
@@ -38,12 +41,17 @@ public:
         return readallImpl(*this, buf, len);
     }
 
-    uint32_t read(uint8_t *buf, uint32_t len) { return readall_virt(buf, len);}
+    uint32_t read(uint8_t *buf, uint32_t len) { return read_virt(buf, len);}
     virtual uint32_t read_virt(uint8_t *buf, uint32_t len)
     {
         throw CException();
     }
 
+    uint32_t write(const uint8_t *buf, uint32_t len) { return write_virt(buf, len); }
+    virtual uint32_t write_virt(const uint8_t *buf, uint32_t len)
+    {
+        throw CException();
+    }
 
 protected:
     CTransport() {};
@@ -57,7 +65,7 @@ protected:
 
     uint32_t readall(uint8_t *buf, uint32_t len) { return CTransport::readall_virt(buf, len);}
     uint32_t read(uint8_t *buf, uint32_t len) { return CTransport::read_virt(buf, len);}
-
+    uint32_t write(const uint8_t *buf, uint32_t len) { return CTransport::write_virt(buf, len);}
 };
 
 template <class Transport_, class Super_ = CDefaultTransport>
@@ -72,7 +80,11 @@ protected:
     }
     virtual uint32_t read_virt(uint8_t *buf, uint32_t len)
     {
-        throw static_cast<Transport_*>(this)->read(buf, len);
+        return static_cast<Transport_*>(this)->read(buf, len);
+    }
+    virtual uint32_t write_virt(const uint8_t *buf, uint32_t len)
+    {
+        return static_cast<Transport_*>(this)->write(buf, len);
     }
 
 };

@@ -1,8 +1,6 @@
 #include "tools.h"
 
 
-
-
 void logMsg(const std::string &)
 {
 

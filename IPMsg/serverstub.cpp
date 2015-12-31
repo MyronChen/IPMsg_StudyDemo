@@ -14,6 +14,7 @@ public:
     ServerStubImpl();
     void connect(const QString &sAddr);
     void login(const QString &sName, const QString &sPwd);
+    void reg(const QString &sName, const QString &sPwd);
 
 public:
     QString _userName;
@@ -43,7 +44,7 @@ bool ServerStub::registerUser(const QString &sName, const QString &sPwd, const Q
     try
     {
         _impl->connect(sAddr);
-        _impl->login(sName, sPwd);
+        _impl->reg(sName, sPwd);
 
         return true;
     }
@@ -52,6 +53,21 @@ bool ServerStub::registerUser(const QString &sName, const QString &sPwd, const Q
         return false;
     }
 
+}
+
+bool ServerStub::loginUser(const QString &sName, const QString &sPwd, const QString &sAddr)
+{
+    try
+    {
+        _impl->connect(sAddr);
+        _impl->login(sName, sPwd);
+
+        return true;
+    }
+    catch (CException)
+    {
+        return false;
+    }
 }
 
 ServerStub::ServerStub() : _impl(new ServerStubImpl())
@@ -73,14 +89,23 @@ ServerStubImpl::ServerStubImpl()
 void ServerStubImpl::connect(const QString &sAddr)
 {
     QMutexLocker locker(&_mutex);
-    _trans = boost::make_shared<CSocket>(sAddr);
-    _prot = boost::make_shared<CBinaryProtocol>(_trans);
-    _service = boost::make_shared<AccountClient>(_prot);
-    _trans->open();
+    if (_trans.get() == NULL)
+    {
+        _trans = boost::make_shared<CSocket>(sAddr);
+        _prot = boost::make_shared<CBinaryProtocol>(_trans);
+        _service = boost::make_shared<AccountClient>(_prot);
+        _trans->open();
+    }
 }
 
 void ServerStubImpl::login(const QString &sName, const QString &sPwd)
 {
     QMutexLocker locker(&_mutex);
     _service->login(sName.toUtf8().constData(), sPwd.toUtf8().constData());
+}
+
+void ServerStubImpl::reg(const QString &sName, const QString &sPwd)
+{
+    QMutexLocker locker(&_mutex);
+    _service->reg(sName.toUtf8().constData(), sPwd.toUtf8().constData());
 }

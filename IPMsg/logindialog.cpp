@@ -1,6 +1,7 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
 #include "registerdialog.h"
+#include "ipmessage.h"
 
 LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),
@@ -26,7 +27,11 @@ void LoginDialog::onAccept()
 {
     if  (!ui->_NameEditor->text().isEmpty())
     {
-        accept();
+        QString sName = ui->_NameEditor->text();
+        QString sPwd = ui->_PwdEditor->text();
+        QString sAddr = ui->_AddrEditor->text();
+        if (IPMsgInstance()->loginUser(sName, sPwd, sAddr))
+            accept();
     }
 }
 
@@ -39,6 +44,6 @@ void LoginDialog::onRegister()
     RegisterDialog zRegisterDlg(sAddr, this);
     if (zRegisterDlg.exec() == QDialog::Accepted)
     {
-        ui->_NameEditor->setText(zRegisterDlg.getName());
+        accept();
     }
 }

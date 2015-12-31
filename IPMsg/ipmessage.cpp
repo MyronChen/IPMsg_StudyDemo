@@ -36,6 +36,17 @@ bool IPMessage::registerUser(const QString &sName, const QString &sPwd, const QS
     return bRslt;
 }
 
+bool IPMessage::loginUser(const QString &sName, const QString &sPwd, const QString &sAddr)
+{
+    bool bRslt = StubInstance()->loginUser(sName, sPwd, sAddr);
+    if (bRslt)
+    {
+        _impl->_userName = sName;
+        _impl->_addr = sAddr;
+    }
+    return bRslt;
+}
+
 IPMessage::IPMessage() : _impl(new IPMessageImpl())
 {
 }
