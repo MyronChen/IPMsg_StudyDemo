@@ -35,6 +35,19 @@ public:
 
     uint32_t writeFieldStop();
 
+    uint32_t writeMapBegin(FieldType type1, FieldType type2, int32_t size)
+    {
+        uint32_t wBytes = writeInt32(type1);
+        wBytes += writeInt32(type2);
+        wBytes += writeInt32(size);
+        return wBytes;
+    }
+
+    uint32_t writeMapEnd()
+    {
+        return 0;
+    }
+
     uint32_t writeString(const std::string &val);
 
     uint32_t readMessageBegin(std::string &name,
@@ -57,7 +70,19 @@ public:
 
     uint32_t readStructEnd();
 
-private:
+    uint32_t readMapBegin(FieldType &type1, FieldType &type2, int32_t &size)
+    {
+        int32_t val;
+        int rBytes  = readInt32(val);
+        type1 = FieldType(val);
+        rBytes += readInt32(val);
+        type2 = FieldType(val);
+        rBytes += readInt32(size);
+
+        return rBytes;
+    }
+
+protected:
     const static uint32_t VERSION = 0x00fe;
 };
 

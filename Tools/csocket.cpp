@@ -34,13 +34,13 @@ CSocket::CSocket(int socket) : _socket(socket), _lingerOn(true), _lingerVal(0),
 
 CSocket::~CSocket()
 {
-
+    close();
 }
 
 void CSocket::open()
 {
     addrinfo hint, *pRes0(NULL), *pRes(NULL);
-    char port[sizeof(65535)] = {0};
+    char port[sizeof("65535")] = {0};
     memset(&hint, 0, sizeof(hint));
     hint.ai_family = PF_UNSPEC;
     hint.ai_socktype = SOCK_STREAM;
@@ -123,7 +123,31 @@ uint32_t CSocket::read(uint8_t *buf, uint32_t len)
 {
     if (_socket == C_INVALID_SOCKET)
         throw CTransportException(CTransportException::NotOpen);
-    return ::read(_socket, buf, len);
+
+    int got(0), errnoCopy(0);
+
+    while(true)
+    {
+        got = ::recv(_socket, buf, len, 0);
+        if (got < 0)
+        {
+            errnoCopy = errno;
+            if (errnoCopy == EAGAIN || errnoCopy == ETIMEDOUT)
+                throw CTransportException(CTransportException::Timeout);
+            if (errnoCopy == EINTR)
+                continue;
+            if (errnoCopy == ECONNRESET)
+                return 0;
+            if (errnoCopy == ENOTCONN)
+                throw CTransportException(CTransportException::NotOpen);
+
+            throw  CTransportException(CTransportException::Unknow);
+        }
+        else
+            break;
+    }
+
+    return got;
 }
 
 void CSocket::openConnect(addrinfo *res)

@@ -63,6 +63,16 @@ public:
         throw CException();
     }
 
+    uint32_t writeMapBegin(FieldType type1, FieldType type2, int32_t size)
+    {
+        throw CException();
+    }
+
+    uint32_t writeMapEnd()
+    {
+        throw CException();
+    }
+
     uint32_t readMessageBegin(std::string &name,
                              MessageType &type,
                              int32_t &seqid)
@@ -111,6 +121,16 @@ public:
         throw CException();
     }
 
+    uint32_t readMapBegin(FieldType &type1, FieldType &type2, int32_t &size)
+    {
+        throw CException();
+    }
+
+    uint32_t readMapEnd()
+    {
+        throw CException();
+    }
+
 protected:
     CDefaultProtocol(boost::shared_ptr<CTransport> trans)
         : CProtocol(trans)
@@ -120,6 +140,7 @@ protected:
 template<class Protocol_, class Super_ = CDefaultProtocol>
 class CVirtualProtocol : public Super_
 {
+public:
     virtual uint32_t writeMessageBegin_virt(const std::string &name,
                               MessageType type,
                               int32_t seqid)
@@ -174,6 +195,16 @@ class CVirtualProtocol : public Super_
         return static_cast<Protocol_*>(this)->writeFieldStop();
     }
 
+    virtual uint32_t writeMapBegin_virt(FieldType type1, FieldType type2, int32_t size)
+    {
+        return static_cast<Protocol_*>(this)->writeMapBegin(type1, type2, size);
+    }
+
+    virtual uint32_t writeMapEnd_virt()
+    {
+        return static_cast<Protocol_*>(this)->writeMapEnd();
+    }
+
     virtual uint32_t readMessageBegin_virt(std::string &name,
                              MessageType &type,
                              int32_t &seqid)
@@ -219,6 +250,16 @@ class CVirtualProtocol : public Super_
     virtual uint32_t readDouble_virt(double &val)
     {
         return static_cast<Protocol_*>(this)->readDouble(val);
+    }
+
+    virtual uint32_t readMapBegin_virt(FieldType &type1, FieldType &type2, int32_t &size)
+    {
+        return static_cast<Protocol_*>(this)->readMapBegin(type1, type2, size);
+    }
+
+    virtual uint32_t readMapEnd_virt()
+    {
+        return static_cast<Protocol_*>(this)->readMapEnd();
     }
 
 protected:

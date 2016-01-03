@@ -15,9 +15,17 @@ UserList::~UserList()
 
 }
 
-void UserList::insertUser(const std::string &name, const std::string &addr)
+void UserList::insertUser(const std::string &name, const std::string &addr, int32_t port)
 {
-    _users[name] = User(name, addr);
+    _users[name] = User(name, addr, port);
+}
+
+void UserList::getUsers(std::map<std::string, std::string> &users) const
+{
+    for (auto iter = _users.begin(); iter != _users.end(); iter++)
+    {
+        users[iter->first] = iter->second.getAddr();
+    }
 }
 
 UserList::UserList()
@@ -26,7 +34,8 @@ UserList::UserList()
 }
 
 
-User::User(const std::string &name, const std::string &addr) : _name(name), _addr(addr)
+User::User(const std::string &name, const std::string &addr, int32_t port)
+    : _name(name), _addr(addr), _port(port)
 {
 
 }

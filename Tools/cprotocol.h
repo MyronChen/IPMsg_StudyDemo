@@ -17,7 +17,8 @@ enum FieldType{
     C_STRING,
     C_INT32,
     C_DOUBLE,
-    C_STRUCT
+    C_STRUCT,
+    C_MAP
 };
 
 class CProtocol
@@ -45,6 +46,10 @@ public:
     virtual uint32_t writeDouble_virt(double val) = 0;
 
     virtual uint32_t writeFieldStop_virt() = 0;
+
+    virtual uint32_t writeMapBegin_virt(FieldType type1, FieldType type2, int32_t size) = 0;
+
+    virtual uint32_t writeMapEnd_virt() = 0;
 
     uint32_t writeMessageBegin(const std::string &name,
                                 MessageType type,
@@ -100,6 +105,16 @@ public:
         return writeFieldStop_virt();
     }
 
+    uint32_t writeMapBegin(FieldType type1, FieldType type2, int32_t size)
+    {
+        return writeMapBegin_virt(type1, type2, size);
+    }
+
+    uint32_t writeMapEnd()
+    {
+        return writeMapEnd_virt();
+    }
+
     //read
     virtual uint32_t readMessageBegin_virt(std::string &name,
                                             MessageType &type,
@@ -120,6 +135,10 @@ public:
     virtual uint32_t readDouble_virt(double &val) = 0;
 
     virtual uint32_t readInt32_virt(int32_t &val) = 0;
+
+    virtual uint32_t readMapBegin_virt(FieldType &type1, FieldType &type2, int32_t &size) = 0;
+
+    virtual uint32_t readMapEnd_virt() = 0;
 
     uint32_t readMessageBegin(std::string &name,
                                MessageType &type,
@@ -166,6 +185,16 @@ public:
     uint32_t readDouble(double &val)
     {
         return readDouble_virt(val);
+    }
+
+    uint32_t readMapBegin(FieldType &type1, FieldType &type2, int32_t &size)
+    {
+        return readMapBegin_virt(type1, type2, size);
+    }
+
+    uint32_t readMapEnd()
+    {
+        return readMapEnd_virt();
     }
 
     void increOutRecursionDepth()

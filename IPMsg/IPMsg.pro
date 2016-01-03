@@ -1,10 +1,5 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2015-12-09T21:26:25
-#
-#-------------------------------------------------
-
 QT       += core gui
+CONFIG += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,7 +14,13 @@ SOURCES += main.cpp\
     ipmessage.cpp \
     util.cpp \
     serverstub.cpp \
-    ../AccountService/accountservice.cpp
+    ../AccountService/accountservice.cpp \
+    ../AccountService/accountservicetype.cpp \
+    chatdialog.cpp \
+    chatsession.cpp \
+    chatmanager.cpp \
+    udpsocket.cpp \
+    chatcontroller.cpp
 
 HEADERS  += mainwindow.h \
     logindialog.h \
@@ -27,18 +28,26 @@ HEADERS  += mainwindow.h \
     ipmessage.h \
     util.h \
     serverstub.h \
-    ../AccountService/accountservice.h
+    ../AccountService/accountservice.h \
+    binaryprotocol.h \
+    ../AccountService/accountservicetype.h \
+    chatdialog.h \
+    chatsession.h \
+    chatmanager.h \
+    udpsocket.h \
+    chatcontroller.h
 
 FORMS    += mainwindow.ui \
     logindialog.ui \
-    registerdialog.ui
+    registerdialog.ui \
+    chatdialog.ui
 
 INCLUDEPATH += ../
 
 
-unix:!macx: LIBS += -L$$PWD/../build-Tools-Desktop_Qt_5_5_1_GCC_64bit-Debug/ -lTools
+unix:!macx: LIBS += -L$$PWD/../obj/ -lTools
 
 INCLUDEPATH += $$PWD/../Tools
 DEPENDPATH += $$PWD/../Tools
 
-unix:!macx: PRE_TARGETDEPS += $$PWD/../build-Tools-Desktop_Qt_5_5_1_GCC_64bit-Debug/libTools.a
+unix:!macx: PRE_TARGETDEPS += $$PWD/../obj/libTools.a

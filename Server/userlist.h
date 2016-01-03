@@ -7,14 +7,15 @@
 
 class User{
 public:
-    User() {}
-    User(const std::string &name, const std::string &addr);
+    User() : _port(0) {}
+    User(const std::string &name, const std::string &addr, int32_t port);
     std::string getName() const { return _name; }
     std::string getAddr() const { return _addr; }
 
 private:
     std::string _name;
     std::string _addr;
+    int32_t _port;
 };
 
 class UserList
@@ -23,7 +24,9 @@ public:
     static UserList* instance();
     ~UserList();
 
-    void insertUser(const std::string &name, const std::string &addr);
+    void insertUser(const std::string &name, const std::string &addr, int32_t port);
+    void getUsers(std::map<std::string, std::string> &users) const;
+
 private:
     UserList();
 

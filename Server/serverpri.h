@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string.h>
 
+
 extern MYSQL gsMysql;
 
 class MySQLGuard
@@ -16,6 +17,7 @@ public:
     MySQLGuard();
     ~MySQLGuard();
 };
+
 
 namespace CDataBase {
 

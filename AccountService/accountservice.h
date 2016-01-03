@@ -4,6 +4,7 @@
 
 #include "../Tools/cprotocol.h"
 #include "../Tools/cprocessor.h"
+#include <map>
 
 USING_PROTOCOL
 USING_NET
@@ -11,8 +12,9 @@ USING_NET
 class AccountIf
 {
 public:
-    virtual void login(const std::string &name, const std::string &pwd) = 0;
-    virtual void reg(const std::string &name, const std::string &pwd) = 0;
+    virtual void login(const std::string &name, const std::string &pwd, int32_t port) = 0;
+    virtual void reg(const std::string &name, const std::string &pwd, int32_t port) = 0;
+    virtual void getOnlineUsers(std::map<std::string, std::string> &onlineMap) = 0;
 
 };
 
@@ -22,13 +24,17 @@ public:
     AccountClient(boost::shared_ptr<CProtocol> prot)
         : _prot(prot)
     {}
-    virtual void login(const std::string &name, const std::string &pwd);
-    virtual void reg(const std::string &name, const std::string &pwd);
+    virtual void login(const std::string &name, const std::string &pwd, int32_t port);
+    virtual void reg(const std::string &name, const std::string &pwd, int32_t port);
+    virtual void getOnlineUsers(std::map<std::string, std::string> &onlineMap);
 
-    void loginSend(const std::string &name, const std::string &pwd);
+    void loginSend(const std::string &name, const std::string &pwd, int32_t port);
     void loginRecv();
 
-    void registerSend(const std::string &name, const std::string &pwd);
+    void registerSend(const std::string &name, const std::string &pwd, int32_t port);
+
+    void voidSend(const std::string &name);
+    void recv_Map_string_string(std::map<std::string, std::string> &output);
 
 protected:
     boost::shared_ptr<CProtocol> _prot;
@@ -42,6 +48,7 @@ private:
 
     void loginDispatch(int32_t seqid, CProtocol *proc, void *data);
     void registerDispatch(int32_t seqid, CProtocol *proc, void *data);
+    void getOnlineUsersDispatch(int32_t seqid, CProtocol *proc, void *data);
 
 protected:
     virtual bool dispatchProcess(CProtocol*,
@@ -55,6 +62,7 @@ public:
     {
         _funcMap["login"] = &AccountProcessor::loginDispatch;
         _funcMap["register"] = &AccountProcessor::registerDispatch;
+        _funcMap["getOnlineUsers"] = &AccountProcessor::getOnlineUsersDispatch;
     }
 
 

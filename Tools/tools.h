@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <netinet/tcp.h>
 #include <boost/make_shared.hpp>
-
+#include <string>
 
 #include "ctransportexception.h"
 

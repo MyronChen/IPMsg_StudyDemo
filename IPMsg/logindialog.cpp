@@ -30,6 +30,7 @@ void LoginDialog::onAccept()
         QString sName = ui->_NameEditor->text();
         QString sPwd = ui->_PwdEditor->text();
         QString sAddr = ui->_AddrEditor->text();
+
         if (IPMsgInstance()->loginUser(sName, sPwd, sAddr))
             accept();
     }

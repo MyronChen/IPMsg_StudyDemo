@@ -4,6 +4,7 @@
 #include "Tools/tools.h"
 #include <QString>
 #include <boost/shared_ptr.hpp>
+#include <QMap>
 
 #define StubInstance()     ServerStub::instance()
 
@@ -16,6 +17,7 @@ public:
 
     bool registerUser(const QString &sName, const QString &sPwd, const QString &sAddr);
     bool loginUser(const QString &sName, const QString &sPwd, const QString &sAddr);
+    int getOnlineUsers(QMap<QString, QString> &onlineUsers);
 
 protected:
     ServerStub();
@@ -23,7 +25,8 @@ protected:
     static ServerStub *_pInstance;
 
 private:
-    boost::shared_ptr<ServerStubImpl> _impl;
+    QString _addr;
+    QString _user;
 };
 
 

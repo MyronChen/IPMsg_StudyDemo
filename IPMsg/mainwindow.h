@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+class QListWidgetItem;
+
 namespace Ui {
 class MainWindow;
 }
@@ -14,6 +16,13 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+private slots:
+    void updateUserList();
+    void onItemDbClk(QListWidgetItem *);
+
+private:
+    void setupUserListTimer();
 
 private:
     Ui::MainWindow *ui;

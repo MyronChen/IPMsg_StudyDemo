@@ -2,6 +2,7 @@
 #define IPMESSAGE_H
 #include <QString>
 #include <boost/shared_ptr.hpp>
+#include <QStringList>
 
 #define IPMsgInstance()     IPMessage::instance()
 
@@ -14,6 +15,8 @@ public:
 
     bool registerUser(const QString &sName, const QString &sPwd, const QString &sAddr);
     bool loginUser(const QString &sName, const QString &sPwd, const QString &sAddr);
+
+    QStringList getOnlineUsers();
 
 protected:
     IPMessage();

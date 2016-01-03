@@ -14,8 +14,8 @@ uint32_t readallImpl(Transport_ &trans, uint8_t *buf, uint32_t len)
     while(result < len)
     {
         result += trans.read(buf, len);
-        if (result < 0)
-            throw CException();
+        if (result <= 0)
+            throw CTransportException(CTransportException::EndOfFile);
     }
 
     return result;

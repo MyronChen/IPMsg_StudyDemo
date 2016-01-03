@@ -1,5 +1,6 @@
 #include "accountservice.h"
 #include "cappexception.h"
+#include "../AccountService/accountservicetype.h"
 
 struct LoginArgs
 {
@@ -8,6 +9,7 @@ struct LoginArgs
 
     std::string name;
     std::string pwd;
+    int32_t port;
 };
 
 uint32_t LoginArgs::write(boost::shared_ptr<CProtocol> prot)
@@ -21,6 +23,10 @@ uint32_t LoginArgs::write(boost::shared_ptr<CProtocol> prot)
 
     ifer += prot->writeFieldBegin("pwd", C_STRING, 2);
     ifer += prot->writeString(pwd);
+    ifer += prot->writeFieldEnd();
+
+    ifer += prot->writeFieldBegin("port", C_INT32, 3);
+    ifer += prot->writeInt32(port);
     ifer += prot->writeFieldEnd();
 
     ifer += prot->writeFieldStop();
@@ -61,6 +67,14 @@ uint32_t LoginArgs::read(CProtocol *prot)
             }
             iBytes += prot->readString(pwd);
             break;
+        case 3:
+            if (fldType != C_INT32)
+            {
+                prot->skip(fldType);
+                throw CTransportException(CTransportException::Unknow);
+            }
+            iBytes += prot->readInt32(port);
+            break;
         default:
             prot->skip(fldType);
             throw CTransportException(CTransportException::Unknow);
@@ -73,24 +87,31 @@ uint32_t LoginArgs::read(CProtocol *prot)
     return iBytes;
 }
 
-void AccountClient::login(const std::string &name, const std::string &pwd)
+void AccountClient::login(const std::string &name, const std::string &pwd, int32_t port)
 {
-    loginSend(name, pwd);
+    loginSend(name, pwd, port);
     loginRecv();
 }
 
-void AccountClient::reg(const std::string &name, const std::string &pwd)
+void AccountClient::reg(const std::string &name, const std::string &pwd, int32_t port)
 {
-    registerSend(name, pwd);
+    registerSend(name, pwd, port);
     loginRecv();
 }
 
-void AccountClient::loginSend(const std::string &name, const std::string &pwd)
+void AccountClient::getOnlineUsers(std::map<std::string, std::string> &onlineMap)
+{
+    voidSend("getOnlineUsers");
+    recv_Map_string_string(onlineMap);
+}
+
+void AccountClient::loginSend(const std::string &name, const std::string &pwd, int32_t port)
 {
     _prot->writeMessageBegin("login", C_Call, 0);
     LoginArgs arg;
     arg.name = name;
     arg.pwd = pwd;
+    arg.port = port;
     arg.write(_prot);
     _prot->writeMessageEnd();
     _prot->getTransport()->writeEnd();
@@ -125,16 +146,56 @@ void AccountClient::loginRecv()
     _prot->getTransport()->readEnd();
 }
 
-void AccountClient::registerSend(const std::string &name, const std::string &pwd)
+void AccountClient::registerSend(const std::string &name, const std::string &pwd, int32_t port)
 {
     _prot->writeMessageBegin("register", C_Call, 0);
     LoginArgs arg;
     arg.name = name;
     arg.pwd = pwd;
+    arg.port = port;
     arg.write(_prot);
     _prot->writeMessageEnd();
     _prot->getTransport()->writeEnd();
     _prot->getTransport()->flush();
+}
+
+void AccountClient::voidSend(const std::string &name)
+{
+    _prot->writeMessageBegin(name, C_Call, 0);
+    _prot->writeMessageEnd();
+    _prot->getTransport()->writeEnd();
+    _prot->getTransport()->flush();
+}
+
+void AccountClient::recv_Map_string_string(std::map<std::string, std::string> &output)
+{
+    std::string msgName;
+    MessageType msgType(C_Call);
+    int32_t seqId;
+
+    _prot->readMessageBegin(msgName, msgType, seqId);
+    if (msgType == C_EXCEPTION)
+    {
+        CAppException zAppEx;
+        zAppEx.read(_prot.get());
+        _prot->readMessageEnd();
+        _prot->getTransport()->readEnd();
+        throw zAppEx;
+    }
+
+    if (msgType != C_REPLY)
+    {
+        _prot->skip(C_STRUCT);
+        _prot->readMessageEnd();
+        _prot->getTransport()->readEnd();
+        return;
+    }
+
+    MapStrStr result;
+    result.read(_prot.get());
+    output = result.data;
+    _prot->readMessageEnd();
+    _prot->getTransport()->readEnd();
 }
 
 
@@ -147,7 +208,7 @@ void AccountProcessor::loginDispatch(int32_t seqid, CProtocol *prot, void *data)
 
     try
     {
-        _iface->login(arg.name, arg.pwd);
+        _iface->login(arg.name, arg.pwd, arg.port);
     }
     catch (const CException &cex)
     {
@@ -176,7 +237,7 @@ void AccountProcessor::registerDispatch(int32_t seqid, CProtocol *prot, void *da
 
     try
     {
-        _iface->reg(arg.name, arg.pwd);
+        _iface->reg(arg.name, arg.pwd, arg.port);
     }
     catch (const CException &cex)
     {
@@ -191,6 +252,38 @@ void AccountProcessor::registerDispatch(int32_t seqid, CProtocol *prot, void *da
     }
 
     prot->writeMessageBegin("register", C_REPLY, seqid);
+    prot->writeMessageEnd();
+    prot->getTransport()->writeEnd();
+    prot->getTransport()->flush();
+}
+
+void AccountProcessor::getOnlineUsersDispatch(int32_t seqid, CProtocol *prot, void *data)
+{
+    VoidArgs arg;
+    arg.read(prot);
+    prot->readMessageEnd();
+    prot->getTransport()->readEnd();
+
+    MapStrStr result;
+
+    try
+    {
+        _iface->getOnlineUsers(result.data);
+    }
+    catch (const CException &cex)
+    {
+        CAppException zAppEx;
+
+        prot->writeMessageBegin("getOnlineUsers", C_EXCEPTION, seqid);
+        zAppEx.write(prot);
+        prot->writeMessageEnd();
+        prot->getTransport()->writeEnd();
+        prot->getTransport()->flush();
+        return;
+    }
+
+    prot->writeMessageBegin("getOnlineUsers", C_REPLY, seqid);
+    result.write(prot);
     prot->writeMessageEnd();
     prot->getTransport()->writeEnd();
     prot->getTransport()->flush();
