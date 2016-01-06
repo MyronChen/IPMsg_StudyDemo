@@ -51,6 +51,11 @@ bool IPMessage::loginUser(const QString &sName, const QString &sPwd, const QStri
     return bRslt;
 }
 
+QString IPMessage::getCurUser() const
+{
+    return _impl->_userName;
+}
+
 QStringList IPMessage::getOnlineUsers()
 {
     _impl->refreshOnlineUsers();
@@ -62,6 +67,11 @@ QStringList IPMessage::getOnlineUsers()
     }
 
     return asUser;
+}
+
+bool IPMessage::getPeerAddr(const QString &sPeerName, QString &peerAddr, int &port)
+{
+    return StubInstance()->getPeerAddr(sPeerName, peerAddr, port);
 }
 
 IPMessage::IPMessage() : _impl(new IPMessageImpl())

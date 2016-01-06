@@ -105,6 +105,12 @@ void AccountClient::getOnlineUsers(std::map<std::string, std::string> &onlineMap
     recv_Map_string_string(onlineMap);
 }
 
+int32_t AccountClient::getPeerPort(const std::string &peerName)
+{
+    strSend("getPeerPort", peerName);
+    return recv_int32();
+}
+
 void AccountClient::loginSend(const std::string &name, const std::string &pwd, int32_t port)
 {
     _prot->writeMessageBegin("login", C_Call, 0);
@@ -198,6 +204,46 @@ void AccountClient::recv_Map_string_string(std::map<std::string, std::string> &o
     _prot->getTransport()->readEnd();
 }
 
+void AccountClient::strSend(const std::string &funcName, const std::string &param)
+{
+    _prot->writeMessageBegin(funcName, C_Call, 0);
+    _prot->writeString(param);
+    _prot->writeMessageEnd();
+    _prot->getTransport()->writeEnd();
+    _prot->getTransport()->flush();
+}
+
+int32_t AccountClient::recv_int32()
+{
+    std::string msgName;
+    MessageType msgType(C_Call);
+    int32_t seqId;
+
+    _prot->readMessageBegin(msgName, msgType, seqId);
+    if (msgType == C_EXCEPTION)
+    {
+        CAppException zAppEx;
+        zAppEx.read(_prot.get());
+        _prot->readMessageEnd();
+        _prot->getTransport()->readEnd();
+        throw zAppEx;
+    }
+
+    if (msgType != C_REPLY)
+    {
+        _prot->skip(C_STRUCT);
+        _prot->readMessageEnd();
+        _prot->getTransport()->readEnd();
+        throw CTransportException(CTransportException::Unknow);
+    }
+
+    int32_t ret(0);
+    _prot->readInt32(ret);
+    _prot->readMessageEnd();
+    _prot->getTransport()->readEnd();
+    return ret;
+}
+
 
 void AccountProcessor::loginDispatch(int32_t seqid, CProtocol *prot, void *data)
 {
@@ -284,6 +330,38 @@ void AccountProcessor::getOnlineUsersDispatch(int32_t seqid, CProtocol *prot, vo
 
     prot->writeMessageBegin("getOnlineUsers", C_REPLY, seqid);
     result.write(prot);
+    prot->writeMessageEnd();
+    prot->getTransport()->writeEnd();
+    prot->getTransport()->flush();
+}
+
+void AccountProcessor::getPeerPortDispatch(int32_t seqid, CProtocol *prot, void *data)
+{
+    std::string peer;
+    prot->readString(peer);
+    prot->readMessageEnd();
+    prot->getTransport()->readEnd();
+
+    int32_t port(0);
+
+    try
+    {
+        port = _iface->getPeerPort(peer);
+    }
+    catch (const CException &cex)
+    {
+        CAppException zAppEx;
+
+        prot->writeMessageBegin("getPeerPortDispatch", C_EXCEPTION, seqid);
+        zAppEx.write(prot);
+        prot->writeMessageEnd();
+        prot->getTransport()->writeEnd();
+        prot->getTransport()->flush();
+        return;
+    }
+
+    prot->writeMessageBegin("getPeerPortDispatch", C_REPLY, seqid);
+    prot->writeInt32(port);
     prot->writeMessageEnd();
     prot->getTransport()->writeEnd();
     prot->getTransport()->flush();

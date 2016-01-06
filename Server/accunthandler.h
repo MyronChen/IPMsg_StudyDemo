@@ -10,6 +10,7 @@ public:
     virtual void login(const std::string &name, const std::string &pwd, int32_t port);
     virtual void reg(const std::string &name, const std::string &pwd, int32_t port);
     virtual void getOnlineUsers(std::map<std::string, std::string> &onlineMap);
+    virtual int32_t getPeerPort(const std::string &name);
 };
 
 #endif // ACCUNTHANDLER_H

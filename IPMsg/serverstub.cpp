@@ -22,6 +22,7 @@ public:
     void login(const QString &sName, const QString &sPwd, int port);
     void reg(const QString &sName, const QString &sPwd, int port);
     void getOnlineUsers(QMap<QString, QString> &onlineUsers);
+    void getPeerAddr(const QString &sPeerName, QString &peerAddr, int &port);
 
 public:
     boost::shared_ptr<CSocket> _trans;
@@ -98,6 +99,20 @@ int ServerStub::getOnlineUsers(QMap<QString, QString> &onlineUsers)
     }
 }
 
+bool ServerStub::getPeerAddr(const QString &sPeerName, QString &peerAddr, int &port)
+{
+    try
+    {
+        ServerStubImpl impl(_addr, _user);
+        impl.getPeerAddr(sPeerName, peerAddr, port);
+        return sPeerName.isEmpty() ? false : true;
+    }
+    catch (CException)
+    {
+        return false;
+    }
+}
+
 ServerStub::ServerStub()
 {
 
@@ -152,4 +167,17 @@ void ServerStubImpl::getOnlineUsers(QMap<QString, QString> &onlineUsers)
     {
         onlineUsers.insert(FROM_UTF8(iter->first), FROM_UTF8(iter->second));
     }
+}
+
+void ServerStubImpl::getPeerAddr(const QString &sPeerName, QString &peerAddr, int &port)
+{
+    peerAddr.clear();
+
+    QMap<QString, QString> onlineUsers;
+    getOnlineUsers(onlineUsers);
+    if (onlineUsers.find(sPeerName) == onlineUsers.end())
+        return;
+    peerAddr = onlineUsers[sPeerName];
+
+    port = _service->getPeerPort(TO_UTF8(sPeerName));
 }

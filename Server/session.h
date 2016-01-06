@@ -9,8 +9,9 @@ public:
     static Session* instance();
     ~Session();
 
-    void setCurrentUser(const std::string &user);
+    void setCurrentUser(const std::string &user, const std::string &addr);
     std::string getCurUser() const;
+    std::string getAddr() const;
 
 private:
     Session();
@@ -18,6 +19,7 @@ private:
 private:
     static Session *_instance;
     std::string _user;
+    std::string _addr;
 
 };
 

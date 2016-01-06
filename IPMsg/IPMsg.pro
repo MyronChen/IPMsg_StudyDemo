@@ -20,7 +20,7 @@ SOURCES += main.cpp\
     chatsession.cpp \
     chatmanager.cpp \
     udpsocket.cpp \
-    chatcontroller.cpp
+    chatmessage.cpp
 
 HEADERS  += mainwindow.h \
     logindialog.h \
@@ -35,7 +35,7 @@ HEADERS  += mainwindow.h \
     chatsession.h \
     chatmanager.h \
     udpsocket.h \
-    chatcontroller.h
+    chatmessage.h
 
 FORMS    += mainwindow.ui \
     logindialog.ui \

@@ -1,4 +1,5 @@
 #include "userlist.h"
+#include "tools.h"
 
 UserList* UserList::_instance = NULL;
 
@@ -26,6 +27,15 @@ void UserList::getUsers(std::map<std::string, std::string> &users) const
     {
         users[iter->first] = iter->second.getAddr();
     }
+}
+
+int32_t UserList::getPort(const std::string &name)
+{
+    auto iter = _users.find(name);
+    if (iter == _users.end())
+        throw CException();
+    else
+        return iter->second.getPort();
 }
 
 UserList::UserList()

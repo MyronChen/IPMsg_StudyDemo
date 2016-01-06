@@ -18,6 +18,7 @@ public:
     bool registerUser(const QString &sName, const QString &sPwd, const QString &sAddr);
     bool loginUser(const QString &sName, const QString &sPwd, const QString &sAddr);
     int getOnlineUsers(QMap<QString, QString> &onlineUsers);
+    bool getPeerAddr(const QString &sPeerName, QString &peerAddr, int &port);
 
 protected:
     ServerStub();

@@ -16,7 +16,10 @@ public:
     bool registerUser(const QString &sName, const QString &sPwd, const QString &sAddr);
     bool loginUser(const QString &sName, const QString &sPwd, const QString &sAddr);
 
+    QString getCurUser() const;
+
     QStringList getOnlineUsers();
+    bool getPeerAddr(const QString &sPeerName, QString &peerAddr, int &port);
 
 protected:
     IPMessage();

@@ -8,7 +8,7 @@ void AccountHandler::login(const std::string &name, const std::string &pwd, int3
     if (!CDataBase::isPasswordOK(name, pwd))
         throw CException();
 
-    UserListIns()->insertUser(name, pwd, port);
+    UserListIns()->insertUser(name, Session::instance()->getAddr(), port);
 }
 
 void AccountHandler::reg(const std::string &name, const std::string &pwd, int32_t port)
@@ -27,4 +27,9 @@ void AccountHandler::getOnlineUsers(std::map<std::string, std::string> &onlineMa
 {
     UserListIns()->getUsers(onlineMap);
     onlineMap.erase(Session::instance()->getCurUser());
+}
+
+int32_t AccountHandler::getPeerPort(const std::string &name)
+{
+    return UserListIns()->getPort(name);
 }

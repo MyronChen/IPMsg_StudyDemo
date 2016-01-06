@@ -11,6 +11,7 @@ public:
     User(const std::string &name, const std::string &addr, int32_t port);
     std::string getName() const { return _name; }
     std::string getAddr() const { return _addr; }
+    int32_t getPort() const { return _port; }
 
 private:
     std::string _name;
@@ -26,6 +27,7 @@ public:
 
     void insertUser(const std::string &name, const std::string &addr, int32_t port);
     void getUsers(std::map<std::string, std::string> &users) const;
+    int32_t getPort(const std::string &name);
 
 private:
     UserList();

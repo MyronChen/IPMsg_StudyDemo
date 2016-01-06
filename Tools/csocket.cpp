@@ -150,6 +150,36 @@ uint32_t CSocket::read(uint8_t *buf, uint32_t len)
     return got;
 }
 
+std::string CSocket::getPeerAddr()
+{
+    if (!isOpened())
+        return std::string();
+
+    sockaddr_storage zAddr;
+    socklen_t len = sizeof(zAddr);\
+    sockaddr *pCachedAddr = getCachedPeerAddrPtr(len);
+    if (pCachedAddr == NULL)
+    {
+        if (::getpeername(_socket, (sockaddr*)&zAddr, &len) != 0)
+            return std::string();
+
+        setCachedPeerAddr((sockaddr*)&zAddr, len);
+        pCachedAddr = (sockaddr*)&zAddr;
+    }
+
+    char sPeerAddr[NI_MAXHOST] = {0};
+    char sPeerServer[NI_MAXSERV] = {0};
+    getnameinfo(pCachedAddr,
+                len,
+                sPeerAddr,
+                sizeof(sPeerAddr),
+                sPeerServer,
+                sizeof(sPeerServer),
+                NI_NUMERICHOST| NI_NUMERICSERV);
+
+    return sPeerAddr;
+}
+
 void CSocket::openConnect(addrinfo *res)
 {
     if (isOpened())
@@ -170,7 +200,7 @@ void CSocket::openConnect(addrinfo *res)
 
     int ret = connect(_socket, res->ai_addr, res->ai_addrlen);
     if (ret == 0)
-        return;
+        goto DONE;
 
     if (errno != EINPROGRESS && errno != EWOULDBLOCK)
     {
@@ -211,6 +241,8 @@ void CSocket::openConnect(addrinfo *res)
         throw CException();
     }
 
+    DONE:
+    setCachedPeerAddr(res->ai_addr, res->ai_addrlen);
 }
 
 void CSocket::setLinger(bool lingerOn, int lingerVal)
@@ -269,6 +301,36 @@ uint32_t CSocket::writePartial(const uint8_t *buf, uint32_t len)
     }
 
     return b;
+}
+
+void CSocket::setCachedPeerAddr(const sockaddr *addr, socklen_t len)
+{
+    if (addr->sa_family == AF_INET)
+    {
+        if (len == sizeof(sockaddr_in))
+            memcpy((void*)&_cachePeerAddr.ipv4, (const void*)addr, len);
+    }
+    else if (addr->sa_family == AF_INET6)
+    {
+        if (len == sizeof(sockaddr_in6))
+            memcpy((void*)&_cachePeerAddr.ipv6, (const void*)addr, len);
+    }
+}
+
+sockaddr *CSocket::getCachedPeerAddrPtr(socklen_t &len) const
+{
+    if (_cachePeerAddr.ipv4.sin_family == AF_INET)
+    {
+        len = sizeof(sockaddr_in);
+        return (sockaddr*)&_cachePeerAddr.ipv4;
+    }
+    else if (_cachePeerAddr.ipv4.sin_family == AF_INET6)
+    {
+        len = sizeof(sockaddr_in6);
+        return (sockaddr*)&_cachePeerAddr.ipv6;
+    }
+
+    return NULL;
 }
 
 }LEAVE_NET

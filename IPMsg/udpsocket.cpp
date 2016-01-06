@@ -6,36 +6,40 @@
 #include <sys/poll.h>
 #include <string.h>
 
-UdpSocket::UdpSocket()
-{
-//    sockaddr_in zAddr;
-//    memset(&zAddr, 0, sizeof(zAddr));
-//    zAddr.sin_family = AF_INET;
-//    zAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-//    zAddr.sin_port = htons(0);
-//    _socket = ::socket(AF_INET)
+static int test = 1;
 
-    sockaddr_in6 zAddr;
-    memset(&zAddr, 0, sizeof(zAddr));
-    zAddr.sin6_family = AF_INET6;
-    zAddr.sin6_addr = in6addr_any;
-    zAddr.sin6_port = 0;
-    _socket = ::socket(AF_INET6, SOCK_DGRAM, 0);
-    if (_socket == -1)
-        return;
+ENTER_NET{
 
-    if (::bind(_socket, (sockaddr*)&zAddr, sizeof(zAddr)))
+    template<class T>
+    inline const void* const_cast_opt(const T *v)
     {
-        int errnoCopy = errno;
-        //log error
-        close();
-        return;
+        return reinterpret_cast<const void*>(v);
     }
+
+    template<class T>
+    inline void* cast_opt(T *v)
+    {
+        return reinterpret_cast<void*>(v);
+    }
+
+UdpSocket::UdpSocket() : _socket(-1)
+{
+
+}
+
+UdpSocket::~UdpSocket()
+{
+
 }
 
 int UdpSocket::getPort() const
 {
-    if (!isOpen())
+    if (test == 1)
+        return 13501;
+    else
+        return 13500;
+
+    if (!isOpened())
         return 0;
 
     sockaddr_storage zAddr;
@@ -50,9 +54,83 @@ int UdpSocket::getPort() const
         return 0;
 }
 
+void UdpSocket::open()
+{
+    sockaddr_in6 zAddr;
+    memset(&zAddr, 0, sizeof(zAddr));
+    zAddr.sin6_family = AF_INET6;
+    zAddr.sin6_addr = in6addr_any;
+    if (test == 1)
+        zAddr.sin6_port = 13501;
+    else
+        zAddr.sin6_port = 13500;
+    //zAddr.sin6_port = 0;
+    _socket = ::socket(AF_INET6, SOCK_DGRAM, 0);
+    if (_socket == -1)
+        return;
+
+    if (::bind(_socket, (sockaddr*)&zAddr, sizeof(zAddr)))
+    {
+        int errnoCopy = errno;
+        //log error
+        close();
+        return;
+    }
+}
+
 void UdpSocket::close()
 {
     ::close(_socket);
     _socket = -1;
 }
 
+bool UdpSocket::peek()
+{
+    if (!isOpened())
+        return false;
+
+    int8_t opt(0);
+    int result = static_cast<int>(::recv(_socket, cast_opt(&opt), 1, MSG_PEEK));
+    if (result == -1)
+        throw CTransportException(CTransportException::Unknow);
+    return (result > 0);
+}
+
+void UdpSocket::enterWrite(sockaddr *addr, socklen_t len)
+{
+    _mutex.lock();
+    memcpy((void*)&_addr, (void*)addr, len);
+    _len = len;
+}
+
+void UdpSocket::leaveWrite()
+{
+    _mutex.unlock();
+}
+
+uint32_t UdpSocket::write(const uint8_t *buf, uint32_t len)
+{
+    int iByte = ::sendto(_socket, const_cast_opt(buf), len, 0, (sockaddr*)&_addr, _len);
+
+    return 0;
+}
+
+uint32_t UdpSocket::read(uint8_t *buf, uint32_t len)
+{
+    sockaddr_storage zRecvAddr;
+    socklen_t iRecvLen = sizeof(zRecvAddr);
+    int iByte = ::recvfrom(_socket, cast_opt(buf), len, 0, (sockaddr*)&zRecvAddr, &iRecvLen);
+    return 0;
+}
+
+UdpSocketInputLocker::UdpSocketInputLocker(UdpSocket *pSocket, sockaddr *addr, socklen_t len) : _pSocket(pSocket)
+{
+    pSocket->enterWrite(addr, len);
+}
+
+UdpSocketInputLocker::~UdpSocketInputLocker()
+{
+    _pSocket->leaveWrite();
+}
+
+}

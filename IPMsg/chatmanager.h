@@ -6,7 +6,10 @@
 #include <QStringList>
 #include "udpsocket.h"
 #include <QThread>
+#include "Tools/cbinaryprotocol.h"
+#include "chatsession.h"
 
+USING_PROTOCOL;
 #define ChatManagerInstance()     ChatManager::instance()
 
 class ChatManager : public QThread
@@ -16,14 +19,19 @@ class ChatManager : public QThread
 public:
     static ChatManager* instance();
     int getPort() const;
+    boost::shared_ptr<ChatSession> getChatSession(const QString &peer);
 
 protected:
     ChatManager();
     ~ChatManager();
     static ChatManager *_pInstance;
 
+    virtual void run();
+
 private:
-    UdpSocket _socket;
+    boost::shared_ptr<UdpSocket> _socket;
+    boost::shared_ptr<CBinaryProtocol> _prot;
+    std::map<QString, boost::shared_ptr<ChatSession>> _sessions;
 };
 
 

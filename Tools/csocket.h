@@ -21,6 +21,7 @@ public:
     uint32_t write(const uint8_t *buf, uint32_t len);
     uint32_t read(uint8_t *buf, uint32_t len);
 
+    std::string getPeerAddr();
 
 private:
     void openConnect(addrinfo *res);
@@ -29,6 +30,8 @@ private:
 
     uint32_t writePartial(const uint8_t *buf, uint32_t len);
 
+    void setCachedPeerAddr(const sockaddr *addr, socklen_t len);
+    sockaddr *getCachedPeerAddrPtr(socklen_t &len) const;
 
 private:
     QString _addr;
@@ -36,6 +39,11 @@ private:
     bool _lingerOn;
     int _lingerVal;
     bool _noDelay;
+
+    union {
+        sockaddr_in ipv4;
+        sockaddr_in6 ipv6;
+    } _cachePeerAddr;
 
 };
 

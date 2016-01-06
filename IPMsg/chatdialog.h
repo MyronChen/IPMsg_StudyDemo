@@ -17,9 +17,13 @@ public:
     explicit ChatDialog(const QString &peer, QWidget *parent = 0);
     ~ChatDialog();
 
+private slots:
+    void onSend();
+
 private:
     Ui::ChatDialog *ui;
     boost::shared_ptr<ChatSession> _pSession;
+
 };
 
 #endif // CHATDIALOG_H

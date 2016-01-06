@@ -15,6 +15,7 @@ public:
     virtual void login(const std::string &name, const std::string &pwd, int32_t port) = 0;
     virtual void reg(const std::string &name, const std::string &pwd, int32_t port) = 0;
     virtual void getOnlineUsers(std::map<std::string, std::string> &onlineMap) = 0;
+    virtual int32_t getPeerPort(const std::string &name) = 0;
 
 };
 
@@ -27,6 +28,7 @@ public:
     virtual void login(const std::string &name, const std::string &pwd, int32_t port);
     virtual void reg(const std::string &name, const std::string &pwd, int32_t port);
     virtual void getOnlineUsers(std::map<std::string, std::string> &onlineMap);
+    virtual int32_t getPeerPort(const std::string &name);
 
     void loginSend(const std::string &name, const std::string &pwd, int32_t port);
     void loginRecv();
@@ -35,6 +37,9 @@ public:
 
     void voidSend(const std::string &name);
     void recv_Map_string_string(std::map<std::string, std::string> &output);
+
+    void strSend(const std::string &funcName, const std::string &param);
+    int32_t recv_int32();
 
 protected:
     boost::shared_ptr<CProtocol> _prot;
@@ -49,6 +54,7 @@ private:
     void loginDispatch(int32_t seqid, CProtocol *proc, void *data);
     void registerDispatch(int32_t seqid, CProtocol *proc, void *data);
     void getOnlineUsersDispatch(int32_t seqid, CProtocol *proc, void *data);
+    void getPeerPortDispatch(int32_t seqid, CProtocol *proc, void *data);
 
 protected:
     virtual bool dispatchProcess(CProtocol*,
@@ -63,6 +69,7 @@ public:
         _funcMap["login"] = &AccountProcessor::loginDispatch;
         _funcMap["register"] = &AccountProcessor::registerDispatch;
         _funcMap["getOnlineUsers"] = &AccountProcessor::getOnlineUsersDispatch;
+        _funcMap["getPeerPort"] = &AccountProcessor::getPeerPortDispatch;
     }
 
 
