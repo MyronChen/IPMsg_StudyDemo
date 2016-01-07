@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 static int test = 1;
 
@@ -34,11 +35,6 @@ UdpSocket::~UdpSocket()
 
 int UdpSocket::getPort() const
 {
-    if (test == 1)
-        return 13501;
-    else
-        return 13500;
-
     if (!isOpened())
         return 0;
 
@@ -56,15 +52,31 @@ int UdpSocket::getPort() const
 
 void UdpSocket::open()
 {
+//    sockaddr_in zAddr;
+//    memset(&zAddr, 0, sizeof(zAddr));
+//    zAddr.sin_family = AF_INET;
+//    zAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+//    zAddr.sin_port = htons(0);
+//    _socket = ::socket(AF_INET, SOCK_DGRAM, 0);
+//    if (_socket == -1)
+//        return;
+
+//    if (::bind(_socket, (sockaddr*)&zAddr, sizeof(zAddr)))
+//    {
+//        int errnoCopy = errno;
+//        //log error
+//        close();
+//        return;
+//    }
+//return;
+
+//////////////////////////////////////////////////////////////////////////////
+
     sockaddr_in6 zAddr;
     memset(&zAddr, 0, sizeof(zAddr));
     zAddr.sin6_family = AF_INET6;
     zAddr.sin6_addr = in6addr_any;
-    if (test == 1)
-        zAddr.sin6_port = 13501;
-    else
-        zAddr.sin6_port = 13500;
-    //zAddr.sin6_port = 0;
+    zAddr.sin6_port = htons(0);
     _socket = ::socket(AF_INET6, SOCK_DGRAM, 0);
     if (_socket == -1)
         return;
@@ -110,17 +122,14 @@ void UdpSocket::leaveWrite()
 
 uint32_t UdpSocket::write(const uint8_t *buf, uint32_t len)
 {
-    int iByte = ::sendto(_socket, const_cast_opt(buf), len, 0, (sockaddr*)&_addr, _len);
-
-    return 0;
+    return ::sendto(_socket, const_cast_opt(buf), len, 0, (sockaddr*)&_addr, _len);
 }
 
 uint32_t UdpSocket::read(uint8_t *buf, uint32_t len)
 {
     sockaddr_storage zRecvAddr;
     socklen_t iRecvLen = sizeof(zRecvAddr);
-    int iByte = ::recvfrom(_socket, cast_opt(buf), len, 0, (sockaddr*)&zRecvAddr, &iRecvLen);
-    return 0;
+    return ::recvfrom(_socket, cast_opt(buf), len, 0, (sockaddr*)&zRecvAddr, &iRecvLen);
 }
 
 UdpSocketInputLocker::UdpSocketInputLocker(UdpSocket *pSocket, sockaddr *addr, socklen_t len) : _pSocket(pSocket)

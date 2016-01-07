@@ -24,6 +24,10 @@ bool ChatMessage::send(CProtocol *protocol, sockaddr *zAddr, socklen_t len)
     ifer += protocol->writeString(_text.toUtf8().constData());
     ifer += protocol->writeFieldEnd();
 
+    ifer += protocol->writeFieldBegin("peer", C_STRING, 3);
+    ifer += protocol->writeString(_peer.toUtf8().constData());
+    ifer += protocol->writeFieldEnd();
+
     ifer += protocol->writeFieldStop();
     ifer += protocol->writeStructEnd();
 
@@ -71,6 +75,19 @@ bool ChatMessage::recv(CProtocol *prot, sockaddr_storage &zAddr, socklen_t &len)
             std::string text;
             iBytes += prot->readString(text);
             _text = QString::fromUtf8(text.c_str());
+            break;
+        }
+        case 3:
+        {
+            if (fldType != C_STRING)
+            {
+                prot->skip(fldType);
+                throw CTransportException(CTransportException::Unknow);
+            }
+
+            std::string text;
+            iBytes += prot->readString(text);
+            _peer = QString::fromUtf8(text.c_str());
             break;
         }
         default:

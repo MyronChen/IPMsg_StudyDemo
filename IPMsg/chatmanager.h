@@ -21,6 +21,9 @@ public:
     int getPort() const;
     boost::shared_ptr<ChatSession> getChatSession(const QString &peer);
 
+signals:
+    void recvMsg(QString);
+
 protected:
     ChatManager();
     ~ChatManager();
@@ -32,6 +35,7 @@ private:
     boost::shared_ptr<UdpSocket> _socket;
     boost::shared_ptr<CBinaryProtocol> _prot;
     std::map<QString, boost::shared_ptr<ChatSession>> _sessions;
+    QMutex _mutex;
 };
 
 

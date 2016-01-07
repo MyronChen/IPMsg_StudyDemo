@@ -16,6 +16,7 @@ public:
     bool recv(CProtocol *protocol, sockaddr_storage &zAddr, socklen_t &len);
 
     Type _type;
+    QString _peer;
     QString _text;
 };
 

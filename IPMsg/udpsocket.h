@@ -6,6 +6,7 @@
 #include <QMutex>
 #include "Tools/tools.h"
 #include <netdb.h>
+#include <arpa/inet.h>
 
 ENTER_NET{                
 
